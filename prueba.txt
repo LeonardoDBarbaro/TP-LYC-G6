@@ -1,2 +1,85 @@
-c:=d*(e-21)/4
+init {
+    a1, b1 : Float
+    variable1 : Int
+    p1, p2, p3 : String
+}
 
+var1:= "inventaron el VAR"
+num:= 10 + 11
+
+num2:= 10+11 *3
+
+escribir("segundo Brasil")
+
+
+leer(variable)
+
+escribir(variable)
+
+
+si(a>b) {
+  var2:=30
+}
+
+mientras (a<=b){
+  a:=b
+}
+
+var1:=120 
+
+
+if(a<=b){
+  var1:=a
+}
+sino {
+var1:=b
+}
+
+
+unCaracter := a
+
+if (a > b AND c > b)
+{
+    escribir("a es mas grande que b y c es mas grande que b")
+}
+
+if (a > b OR c > b)
+{
+    escribir("a es mas grande que b o c es mas grande que b")
+}
+
+if(a<=b*3){
+  var1:=a
+}
+sino {
+var1:=b
+}
+
+if (NOT a > b)
+{
+    escribir("a no es mas grande que b")
+}
+
+id1 := id2 * cte1 + cte2
+
+*- Esto es un comentario -*
+
+untilLoop(11>x, x:=3+x)
+
+buscoYReemplazo(buscar, en, reemplazo)
+
+*- ERRORES -*
+
+*- Para poder probar estos errores debe borrar el comentario de la linea indicada  -*
+
+*- La siguiente linea debe dar error debido a que la variable tiene un rango maximo de 5 caracteres -*
+*-  vardeprueba := "aaaaabbbbbcccccdddddeeeeefffffo"  -*
+
+*- La siguiente linea debe dar error debido a que el entero excede el valor maximo establecido (16 bits)  -*
+*- num := 3 + 65536  -*
+
+*- La siguiente linea debe dar error debido a que el numero real (float) excede el valor maximo establecido (32 bits)  -*
+*- num2 := 999999999999999999999999999999999999999.99+10  -*
+
+*- La siguiente linea debe dar error debido a que se ingresa un caracter invalido  -*
+*- ###  -*
