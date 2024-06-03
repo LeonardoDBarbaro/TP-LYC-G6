@@ -1,18 +1,22 @@
 _____________________________________________________________________________________________
 |NOMBRE                        |TIPO DE DATO  |VALOR                         |LONGITUD      |
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-|a                             |INTEGER       |30                            |0             |
-|a1                            |FLOAT         |                              |0             |
-|b1                            |FLOAT         |                              |0             |
-|id1                           |STRING        |a no es mas grande que b      |0             |
-|num                           |INTEGER       |11                            |0             |
-|num2                          |INTEGER       |3                             |0             |
-|p1                            |STRING        |                              |0             |
-|p2                            |STRING        |                              |0             |
-|p3                            |STRING        |                              |0             |
-|unCaracter                    |INTEGER       |120                           |0             |
-|var1                          |INTEGER       |3                             |0             |
-|var2                          |INTEGER       |30                            |0             |
-|variable1                     |INTEGER       |                              |0             |
-|x                             |INTEGER       |3                             |0             |
+|_10                           |              |10                            |              |
+|_11                           |              |11                            |              |
+|_120                          |              |120                           |              |
+|_2                            |              |2                             |              |
+|_3                            |              |3                             |              |
+|_30                           |              |30                            |              |
+|_a mayor b o c mayor b        |              |a mayor b o c mayor b         |21            |
+|_a mayor b y c mayor b        |              |a mayor b y c mayor b         |21            |
+|_a no es mas grande que b     |              |a no es mas grande que b      |24            |
+|_inventaron el VAR            |              |inventaron el VAR             |17            |
+|_segundo Brasil               |              |segundo Brasil                |14            |
+|a1                            |FLOAT         |                              |              |
+|b1                            |FLOAT         |                              |              |
+|p1                            |STRING        |                              |              |
+|p2                            |STRING        |                              |              |
+|p3                            |STRING        |                              |              |
+|variable1                     |INTEGER       |                              |              |
+|variable2                     |INTEGER       |                              |              |
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯

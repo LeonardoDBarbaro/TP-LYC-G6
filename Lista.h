@@ -167,8 +167,10 @@ char* eliminarComillas(char* stringRecibido)
             (*cad) = (*stringRecibido);
             cad++;
         }
+        
         stringRecibido++;
     }
+
     *cad = '\0';
     return cadInicio;
 }
@@ -206,9 +208,17 @@ void eliminarTabla(tLista *p)
 
     while(*p)
     {
-        //printf("|%-30s|%-14s|%-30s|%-14d|\n", (*p)->nombre, (*p)->tipo, (*p)->valor, (*p)->longitud);
-        fprintf(puntTabla, "|%-30s|%-14s|%-30s|%-14d|\n", (*p)->nombre, (*p)->tipo, (*p)->valor, (*p)->longitud);
+        //printf("|%-30s|%-14s|%-30s|%-14d|\n", (*p)->nombre, (*p)->tipo, (*p)->valor, (*p)->longitud));
+        if((*p)->longitud > 0){
+            fprintf(puntTabla, "|%-30s|%-14s|%-30s|%-14d|\n", (*p)->nombre, (*p)->tipo, (*p)->valor, (*p)->longitud);
+        }
+        else{
+            fprintf(puntTabla, "|%-30s|%-14s|%-30s|%-14s|\n", (*p)->nombre, (*p)->tipo, (*p)->valor, "");
+        }
+        
+        tLista temp = *p;
         p = &(*p)->sig;
+        free(temp);
     }
 
     fprintf(puntTabla, "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n");

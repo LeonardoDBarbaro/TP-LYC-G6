@@ -1,0 +1,7 @@
+init {
+    a1, b1 : Float
+    variable1, variable2, a2 : Int
+    p1, p2, p3 : String
+}
+
+variable1 := variable2 * 30 + a2
