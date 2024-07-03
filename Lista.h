@@ -1,6 +1,10 @@
+#ifndef LISTA_H
+#define LISTA_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define SIN_MEM 0
 #define EXITO 1
@@ -21,6 +25,7 @@ typedef tNodo* tLista;
 void crearLista(tLista *p);
 void mostrarLista(tLista *p);
 int insertarEnOrden(tLista *p, char* nombre, char* tipo, char* valor, int longitud);
+bool buscarEnLista(tLista *p, char* nombre, char* tipoEncontrado);
 
 /* Del ID guardamos nombre y tipo de dato solamente. Su valor se establece en tiempo de ejecución */
 int insertarID(tLista *p, char* nombre, char* tipo,char* valor); 
@@ -32,6 +37,7 @@ int insertarInt(tLista *p, char* lexema);
 int insertarFloat(tLista *p, char* lexema);
 
 void imprimirEncabezado(FILE *puntTabla);
+void imprimirDataAsm(tLista *p, FILE *archivo);
 void eliminarTabla(tLista *p);
 char* eliminarComillas(char* stringRecibido);
 
@@ -68,12 +74,9 @@ int insertarEnOrden(tLista *p, char* nombre, char* tipo, char* valor, int longit
 
     if(result == 0)
     {
-        strcpy((*p)->valor, valor);
-        strcpy((*p)->tipo, tipo);
-        (*p)->longitud = longitud;
         return DUPLICADO;
-
     }
+
     strcpy(nue->nombre, nombre);
     strcpy(nue->tipo, tipo);
     strcpy(nue->valor, valor);
@@ -85,6 +88,25 @@ int insertarEnOrden(tLista *p, char* nombre, char* tipo, char* valor, int longit
 
     return EXITO;
 }
+
+
+bool buscarEnLista(tLista *p, char* nombre, char* tipoEncontrado)
+{
+    bool copiarTipo = (tipoEncontrado != NULL); // Determina si se debe copiar el tipo
+
+    while (*p)
+    {
+        if (strcmp((*p)->nombre, nombre) == 0) {
+            if (copiarTipo) {
+                strcpy(tipoEncontrado, (*p)->tipo);
+            }
+            return true;
+        }
+        p = &(*p)->sig;
+    }
+    return false;
+}
+
 
 /* En este caso el lexema que recibimos es lo que nos da yytext */
 int insertarInt(tLista *p, char* lexema) 
@@ -189,6 +211,28 @@ int insertarID(tLista *p, char* lexema, char* tipo, char* valor)
     return EXITO;
 }
 
+void imprimirDataAsm(tLista *p, FILE *archivo){
+    
+     while(*p)
+    {
+        //printf("|%-30s|%-14s|%-30s|%-14d|\n", (*p)->nombre, (*p)->tipo, (*p)->valor, (*p)->longitud));
+        if((*p)->longitud > 0){
+            fprintf(archivo, "%-30s DB '%-10s', '$'\n", (*p)->nombre, (*p)->valor);
+        }
+        else if(strcmp((*p)->tipo, "INTEGER") == 0) {
+            fprintf(archivo, "%-30s DW ? %-30s\n", (*p)->nombre, (*p)->valor);
+        }
+        else if(strcmp((*p)->tipo, "FLOAT")){
+            fprintf(archivo, "%-30s DD ?\n", (*p)->nombre);
+        }
+        else if(strcmp((*p)->tipo, "STRING")){
+            fprintf(archivo, "%-30s DB 50 DUP (?)\n", (*p)->nombre);
+        }
+
+        p = &(*p)->sig;
+    }
+}
+
 void eliminarTabla(tLista *p)
 {
 
@@ -232,3 +276,5 @@ void imprimirEncabezado(FILE *puntTabla)
     fprintf(puntTabla, "|%-30s|%-14s|%-30s|%-14s|\n", "NOMBRE", "TIPO DE DATO", "VALOR", "LONGITUD");
     fprintf(puntTabla, "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n");
 }
+
+#endif // LISTA_h 

@@ -1,74 +1,113 @@
 init {
-    a1, b1 : Float
-    variable1, variable2 : Int
-    p1, p2, p3 : String
+
+    *- descomentar b1 para probar variables duplicadas ya que el id b1 ya existe -* 
+    a1, b1, *- b1, -*  c1 : Float
+    variable1, variable2, variable3, id1, id2, cte1, cte2, x, reemplazar : Int
+    p1, p2, p3, p4 : String
 }
 
-p1 := "inventaron el VAR"
+id1 := 20
 
 variable1 := 10 + 11
 
-variable2 := 10 + 11 * 3 + 2 - variable1 
+*- error de tipos en la asignacion -*
+*- a1 := p1 -*
+*- variable1 := "cadena de caracteres" -*
+*- a1 := variable1 -*
+*- a1 := 30 -*
+*- variable1 := 1.5 -*
+
+*- error de tipos en la condicion del if variable1 es int y p1 es string -*
+*- si ( variable1 > p1 ) {
+  variable2 := 30
+} -*
+
+*- error de variable no declarada pero usada miVariable nunca fue declarada -*
+*- miVariable := a1 -*
+
+variable2 := 10 + 11 * 3 + 2 - variable1
+
+variable3 := 40
+
+*- p2 := "segundo Brasil" -*
 
 escribir( "segundo Brasil" )
 
 
-leer( variable )
+leer( variable1 )
 
-escribir( variable )
-
-
-si ( a > b ) {
-  var2 := 30
-}
-
-mientras ( a <= b ) {
-  a := b
-}
-
-var1 := 120 
+escribir( variable1 )
 
 
-if ( a <= b ) {
-  var1 := a
+if ( a1 <= b1 ){
+
+  si ( a1 > b1 ){
+    variable3 := 30
+  }
+
+  si (id1 > id2 ){
+    variable2 := 40
+  }
 }
 sino {
- var1 := b
+  c1 := a1
 }
 
 
-unCaracter := a
-
-if ( (a > b) AND (c > b) )
-{
-    escribir("a mayor b y c mayor b")
+si ( a1 > b1 ) {
+  variable2 := 30
 }
 
-if ( (a > b) OR (c > b) )
-{
-    escribir("a mayor b o c mayor b")
+mientras ( a1 <= b1 ) {
+  a1 := b1
 }
 
-if( a <= b * 3){
-  var1 := a
+variable1 := 120 
 
+
+if ( a1 <= b1 ) {
+  variable1 := variable2
 }
 sino {
-var1 := b
+  variable1 := variable3
 }
 
-if ( NOT ( a > b ) )
+
+p2 := p1
+
+if ( (a1 > b1) AND (c1 > b1) )
 {
-    escribir("a no es mas grande que b")
+    p3 := "a1 mayor b1 y c1 mayor b1"
+    escribir( p3 )
+}
+
+if ( (a1 > b1) OR (c1 > b1) )
+{
+    escribir( "a1 mayor b1 o c1 mayor b1" )
+}
+
+if( variable1 <= variable3 * 3){
+  b1 := a1
+}
+sino {
+variable1 := variable2
+}
+
+if ( NOT ( a1 > b1 ) )
+{
+    p4 := "a1 no es mas grande que b1"
+    escribir( p4 )
 }
 
 id1 := id2 * cte1 + cte2
 
 *- Esto es un comentario -*
 
-untilloop( 11 > x , x := 3 + x )
+untilloop( x > 11 , x := 3 + x )
 
+*- buscoyreemplazo solo funciona para numeros enteros -*
 reemplazar := buscoyreemplazo ( 30 , [ 1, 4, 20, 30, 50 ] )
+
 
 *- ERRORES -*
 

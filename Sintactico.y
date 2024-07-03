@@ -4,15 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "y.tab.h"
 #include "Lista.h"
 #include "Pila.h"
 #include "Tercetos.h"
-
-typedef enum {
-    false = 0,
-    true = 1
-} bool;
 
 int yystopparser=0;
 FILE  *yyin;
@@ -21,12 +17,19 @@ int yyerror();
 int yylex();
 tLista listaSimbolos;
 t_pila pilaInit;
+
+int crearEtiquetaEnTerceto();
+
 bool apilarInd = false;
 bool pantalla = false;
 bool numEncontrado = false;
+bool condMult = false;
+
 char nombre[200];
 char valor[200];
 char tipo[200];
+char tipoLadoIzq[200];
+char tipoLadoDer[200];
 int longitud;
 
 int Eind;
@@ -35,7 +38,15 @@ int Find;
 int CADind;
 int Aind;
 int condInd;
+int condIzqInd;
 int BIind;
+int condMultInd;
+int pivotInd;
+int auxInd;
+int saltInd;
+int ifAnidadoInd;
+int indexTerceto;
+int indWH;
 
 char EindC[50];
 char readWrite[50];
@@ -45,10 +56,14 @@ char CADindC[50];
 char AindC[50];
 char WHind[50];
 char condIndC[50];
+char condIzqIndC[50];
 char condMultIndC[50];
 char etiquetaCond[50];
 char escribirT[50];
 char numeroABuscar[50];
+char pivotIndC[50];
+char auxIndC[50];
+char etiqueta[50];
 %}
 
 %union{
@@ -109,7 +124,7 @@ char numeroABuscar[50];
 %token CHAR_PUNTOYCOMA
 
 %%
-programa_final: programa    {printf("\nLa expresion es correcta\n");}
+programa_final: programa    {printf("\nLa expresion es correcta\n"); generar_assembler(&listaSimbolos);}
                             ;
                             
 programa: sentencia
@@ -139,69 +154,66 @@ comienzo_gramatica: asignacion      {printf("\nRegla Asig \n");
                     ;
 
 asignacion: 
-            IDENTIFICADOR OP_DOSPUNTOS OP_IGUAL expresion     {sprintf(EindC, "%d", Eind); Aind = crearTerceto(":=", $1, EindC);} 
-            | IDENTIFICADOR OP_DOSPUNTOS OP_IGUAL const_string  {sprintf(CADindC, "%d", CADind); Aind = crearTerceto(":=", $1, CADindC);}
+            IDENTIFICADOR OP_DOSPUNTOS OP_IGUAL {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);};} expresion {sprintf(EindC, "[%d]", Eind); Aind = crearTerceto(":=", $1, EindC);}
+            | IDENTIFICADOR OP_DOSPUNTOS OP_IGUAL {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);};} const_string  {sprintf(CADindC, "[%d]", CADind); Aind = crearTerceto(":=", $1, CADindC);}
             ;
 
-while: WHILE {apilarInd = true;} cond_completa LLAVE_A cantidad_lineas LLAVE_C {desapilar(&pilaInit, WHind); crearTerceto("BI", WHind, ""); modificarTerceto_saltoCondicional(condInd); apilarInd = false;}
+while: WHILE {indWH = crearEtiquetaEnTerceto();} cond_completa LLAVE_A cantidad_lineas LLAVE_C {sprintf(WHind, "[%d]", indWH); crearTerceto("BI", WHind, ""); desapilarTercetos(); modificarTerceto_saltoCondicional(condInd); crearEtiquetaEnTerceto();}
        ;
 
-if: IF cond_completa LLAVE_A cantidad_lineas LLAVE_C {BIind = crearTerceto("BI", "", ""); modificarTerceto_saltoCondicional(condInd);} ELSE LLAVE_A cantidad_lineas LLAVE_C {modificarTerceto_saltoCondicional(BIind);}
-    |IF cond_completa LLAVE_A cantidad_lineas LLAVE_C {modificarTerceto_saltoCondicional(condInd);}
+if: IF cond_completa LLAVE_A cantidad_lineas LLAVE_C {BIind = crearTerceto("BI", "", ""); if((condInd = desapilarTercetos()) != -1){modificarTerceto_saltoCondicional(condInd);}; crearEtiquetaEnTerceto();} ELSE LLAVE_A cantidad_lineas LLAVE_C {modificarTerceto_saltoCondicional(BIind); crearEtiquetaEnTerceto();}
+    |IF cond_completa LLAVE_A cantidad_lineas LLAVE_C {if((condInd = desapilarTercetos()) != -1){modificarTerceto_saltoCondicional(condInd);}; crearEtiquetaEnTerceto(); if(condMult == true){modificarTerceto_saltoCondicional(condMultInd); crearEtiquetaEnTerceto(); condMult = false;};}
             ; 
 
-leer: READ PARENTESIS_A expresion PARENTESIS_C {sprintf(readWrite, "%d", Eind); crearTerceto("READ", readWrite, "");}
-      | READ PARENTESIS_A {pantalla = true;} const_string PARENTESIS_C {strcpy(escribirT, eliminarComillas(valor)); crearTerceto("READ", escribirT, ""); pantalla = false;}
+leer: READ PARENTESIS_A IDENTIFICADOR PARENTESIS_C {if(buscarEnLista(&listaSimbolos, $3, NULL) == false){yyerrorNoExisteVariable($3);}; crearTerceto("READ", $3, "");}
+      | READ PARENTESIS_A CONST_CADENA PARENTESIS_C {strcpy(valor, $3); strcpy(nombre, "_");
+                                                     strcat(nombre, eliminarComillas(valor)); insertarEnOrden(&listaSimbolos,nombre,"",valor,strlen(eliminarComillas(valor)) ? strlen(eliminarComillas(valor)) : 0); crearTerceto("READ", valor, "");}
           ;
 
-escribir: WRITE PARENTESIS_A expresion PARENTESIS_C {sprintf(readWrite, "%d", Eind); crearTerceto("WRITE", readWrite, "");}
-          | WRITE PARENTESIS_A {pantalla = true;} const_string PARENTESIS_C {strcpy(escribirT, eliminarComillas(valor)); crearTerceto("WRITE", escribirT, ""); pantalla = false;}
+escribir: WRITE PARENTESIS_A IDENTIFICADOR PARENTESIS_C {if(buscarEnLista(&listaSimbolos, $3, NULL) == false){yyerrorNoExisteVariable($3);}; crearTerceto("WRITE", $3, "");}
+          | WRITE PARENTESIS_A CONST_CADENA {strcpy(valor, yytext); strcpy(nombre, "_");
+                                             strcat(nombre, eliminarComillas(valor)); insertarEnOrden(&listaSimbolos,nombre,"",valor,strlen(eliminarComillas(valor)) ? strlen(eliminarComillas(valor)) : 0); crearTerceto("WRITE", valor, "");} PARENTESIS_C
           ;
 
-const_string: CONST_CADENA { strcpy(valor, yytext); strcpy(nombre, "_");
-    strcat(nombre, eliminarComillas(valor)); insertarEnOrden(&listaSimbolos,nombre,"",valor,strlen(eliminarComillas(valor)) ? strlen(eliminarComillas(valor)) : 0); 
-    if(pantalla == false){CADind = crearTerceto(yytext, "", "");};}
+const_string: CONST_CADENA {if(strcmp(tipoLadoIzq, "STRING") != 0){yyerrorTiposEntreIds(yytext);}; strcpy(valor, yytext); strcpy(nombre, "_");
+                             strcat(nombre, eliminarComillas(valor)); insertarEnOrden(&listaSimbolos,nombre,"STRING",valor,strlen(eliminarComillas(valor)) ? strlen(eliminarComillas(valor)) : 0); 
+                             CADind = crearTerceto(nombre, "", "");}
              ;
 
-numero_real: CONST_INTEGER { strcpy(nombre, "_");
-    strcat(nombre, yytext); insertarEnOrden(&listaSimbolos,nombre,"",yytext,0); Find = crearTerceto(yytext,"","");}
-             | CONST_FLOAT { strcpy(nombre, "_");
-    strcat(nombre, yytext); insertarEnOrden(&listaSimbolos,nombre,"",yytext,0); Find = crearTerceto(yytext,"","");}
+numero_real: CONST_INTEGER {if(strcmp(tipoLadoIzq, "INTEGER") != 0){yyerrorTiposEntreIds(yytext);}; strcpy(nombre, "_");
+    strcat(nombre, yytext); insertarEnOrden(&listaSimbolos,nombre,"INTEGER",yytext,0); Find = crearTerceto(nombre,"","");}
+             | CONST_FLOAT {if(strcmp(tipoLadoIzq, "FLOAT") != 0){yyerrorTiposEntreIds(yytext);}; strcpy(nombre, "_");
+    strcat(nombre, yytext); insertarEnOrden(&listaSimbolos,nombre,"FLOAT",yytext,0); Find = crearTerceto(nombre,"","");}
              ;
 
-cond_completa: PARENTESIS_A cond_completa AND {sprintf(condIndC, "%d", condInd); apilar(&pilaInit, condIndC);} cond_completa PARENTESIS_C {sprintf(condIndC, "%d", condInd); desapilar(&pilaInit, condMultIndC); crearTerceto("AND", condIndC, condMultIndC); condInd = crearTerceto("BFALSE", "", "");}
-                | PARENTESIS_A cond_completa OR {sprintf(condIndC, "%d", condInd); apilar(&pilaInit, condIndC);} cond_completa PARENTESIS_C {sprintf(condIndC, "%d", condInd); desapilar(&pilaInit, condMultIndC); crearTerceto("OR", condIndC, condMultIndC); condInd = crearTerceto("BFALSE", "", "");}
+cond_completa: PARENTESIS_A cond_completa AND {condMultInd = desapilarTercetos(); condMult = true;} cond_completa PARENTESIS_C
+                | PARENTESIS_A cond_completa OR {modificarTerceto_etiquetaCond(etiquetaCond, condInd); condMultInd = desapilarTercetos();} cond_completa PARENTESIS_C {modificarTerceto_saltoCondicional(condMultInd); crearEtiquetaEnTerceto();}
                 | PARENTESIS_A cond PARENTESIS_C
-                | PARENTESIS_A NOT PARENTESIS_A cond PARENTESIS_C PARENTESIS_C {if(strcmp(etiquetaCond, "BEQ") == 0){modificarTerceto_etiquetaCond("BNE", condInd);};
-                                                                                if(strcmp(etiquetaCond, "BNE") == 0){modificarTerceto_etiquetaCond("BEQ", condInd);};
-                                                                                if(strcmp(etiquetaCond, "BLE") == 0){modificarTerceto_etiquetaCond("BGT", condInd);};
-                                                                                if(strcmp(etiquetaCond, "BLT") == 0){modificarTerceto_etiquetaCond("BGE", condInd);};
-                                                                                if(strcmp(etiquetaCond, "BGE") == 0){modificarTerceto_etiquetaCond("BLT", condInd);};
-                                                                                if(strcmp(etiquetaCond, "BGT") == 0){modificarTerceto_etiquetaCond("BLE", condInd);};}
+                | PARENTESIS_A NOT PARENTESIS_A cond PARENTESIS_C PARENTESIS_C {modificarTerceto_etiquetaCond(etiquetaCond, condInd);}
                 ;
 
-cond: expresion OP_DISTINTO termino {sprintf(EindC, "%d", Eind); if(apilarInd == true){apilar(&pilaInit, EindC);}; sprintf(TindC, "%d", Tind); crearTerceto("CMP", EindC, TindC); strcpy(etiquetaCond, "BEQ"); condInd = crearTerceto(etiquetaCond, "", "");}
-    | expresion OP_IGUAL termino    {sprintf(EindC, "%d", Eind); if(apilarInd == true){apilar(&pilaInit, EindC);}; sprintf(TindC, "%d", Tind); crearTerceto("CMP", EindC, TindC); strcpy(etiquetaCond, "BNE"); condInd = crearTerceto(etiquetaCond, "", "");}
-    | expresion OP_MAYOR termino    {sprintf(EindC, "%d", Eind); if(apilarInd == true){apilar(&pilaInit, EindC);}; sprintf(TindC, "%d", Tind); crearTerceto("CMP", EindC, TindC); strcpy(etiquetaCond, "BLE"); condInd = crearTerceto(etiquetaCond, "", "");}
-    | expresion OP_MAYORIGUAL termino {sprintf(EindC, "%d", Eind); if(apilarInd == true){apilar(&pilaInit, EindC);}; sprintf(TindC, "%d", Tind); crearTerceto("CMP", EindC, TindC); strcpy(etiquetaCond, "BLT"); condInd = crearTerceto(etiquetaCond, "", "");}
-    | expresion OP_MENOR termino     {sprintf(EindC, "%d", Eind); if(apilarInd == true){apilar(&pilaInit, EindC);}; sprintf(TindC, "%d", Tind); crearTerceto("CMP", EindC, TindC); strcpy(etiquetaCond, "BGE"); condInd = crearTerceto(etiquetaCond, "", "");}
-    | expresion OP_MENORIGUAL termino {sprintf(EindC, "%d", Eind); if(apilarInd == true){apilar(&pilaInit, EindC);}; sprintf(TindC, "%d", Tind); crearTerceto("CMP", EindC, TindC); strcpy(etiquetaCond, "BGT"); condInd = crearTerceto(etiquetaCond, "", "");}
+cond: IDENTIFICADOR OP_DISTINTO {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);}else{condIzqInd = crearTerceto($1, "", "");};} expresion {sprintf(condIzqIndC, "[%d]", condIzqInd); sprintf(EindC, "[%d]", Eind); crearTerceto("CMP", condIzqIndC, EindC); strcpy(etiquetaCond, "BEQ"); condInd = crearTerceto(etiquetaCond, "", ""); apilarTercetos(condInd);}
+    | IDENTIFICADOR OP_IGUAL {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);}else{condIzqInd = crearTerceto($1, "", "");};} expresion    {sprintf(condIzqIndC, "[%d]", condIzqInd); sprintf(EindC, "[%d]", Eind); crearTerceto("CMP", condIzqIndC, EindC); strcpy(etiquetaCond, "BNE"); condInd = crearTerceto(etiquetaCond, "", ""); apilarTercetos(condInd);}
+    | IDENTIFICADOR OP_MAYOR {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);}else{condIzqInd = crearTerceto($1, "", "");};} expresion    {sprintf(condIzqIndC, "[%d]", condIzqInd); sprintf(EindC, "[%d]", Eind); crearTerceto("CMP", condIzqIndC, EindC); strcpy(etiquetaCond, "BLE"); condInd = crearTerceto(etiquetaCond, "", ""); apilarTercetos(condInd);}
+    | IDENTIFICADOR OP_MAYORIGUAL {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);}else{condIzqInd = crearTerceto($1, "", "");};} expresion {sprintf(condIzqIndC, "[%d]", condIzqInd); sprintf(EindC, "[%d]", Eind); crearTerceto("CMP", condIzqIndC, EindC); strcpy(etiquetaCond, "BLT"); condInd = crearTerceto(etiquetaCond, "", ""); apilarTercetos(condInd);}
+    | IDENTIFICADOR OP_MENOR {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);}else{condIzqInd = crearTerceto($1, "", "");};} expresion     {sprintf(condIzqIndC, "[%d]", condIzqInd); sprintf(EindC, "[%d]", Eind); crearTerceto("CMP", condIzqIndC, EindC); strcpy(etiquetaCond, "BGE"); condInd = crearTerceto(etiquetaCond, "", ""); apilarTercetos(condInd);}
+    | IDENTIFICADOR OP_MENORIGUAL {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);}else{condIzqInd = crearTerceto($1, "", "");};} expresion {sprintf(condIzqIndC, "[%d]", condIzqInd); sprintf(EindC, "[%d]", Eind); crearTerceto("CMP", condIzqIndC, EindC); strcpy(etiquetaCond, "BGT"); condInd = crearTerceto(etiquetaCond, "", ""); apilarTercetos(condInd);}
     ;
 
 expresion:
-        expresion OP_SUMA termino {sprintf(EindC, "%d", Eind); sprintf(TindC, "%d", Tind); Eind = crearTerceto("+", EindC, TindC);}
-        |expresion OP_RESTA termino {sprintf(EindC, "%d", Eind); sprintf(TindC, "%d", Tind); Eind = crearTerceto("-", EindC, TindC);}
+        expresion OP_SUMA termino {sprintf(EindC, "[%d]", Eind); sprintf(TindC, "[%d]", Tind); Eind = crearTerceto("+", EindC, TindC);}
+        |expresion OP_RESTA termino {sprintf(EindC, "[%d]", Eind); sprintf(TindC, "[%d]", Tind); Eind = crearTerceto("-", EindC, TindC);}
         |termino   {Eind = Tind;}
         ;
 
 termino: 
        factor {Tind = Find;}
-       |termino OP_MULT factor {sprintf(TindC, "%d", Tind); sprintf(FindC, "%d", Find); Tind = crearTerceto("*", TindC, FindC);}
-       |termino OP_DIV factor  {sprintf(TindC, "%d", Tind); sprintf(FindC, "%d", Find); Tind = crearTerceto("/", TindC, FindC);}
+       |termino OP_MULT factor {sprintf(TindC, "[%d]", Tind); sprintf(FindC, "[%d]", Find); Tind = crearTerceto("*", TindC, FindC);}
+       |termino OP_DIV factor  {sprintf(TindC, "[%d]", Tind); sprintf(FindC, "[%d]", Find); Tind = crearTerceto("/", TindC, FindC);}
        ;
 
 factor: 
-      IDENTIFICADOR  {Find = crearTerceto(yytext,"","");}
+      IDENTIFICADOR  {if(buscarEnLista(&listaSimbolos, yytext, tipoLadoDer) == false){yyerrorNoExisteVariable(yytext);}; if(strcmp(tipoLadoIzq, tipoLadoDer) != 0){yyerrorTiposEntreIds(yytext);}; Find = crearTerceto(yytext,"","");}
       | numero_real
         | PARENTESIS_A expresion PARENTESIS_C {Find = Eind;}
         ;
@@ -215,9 +227,9 @@ filas: fila_variables filas
 
 
             
-fila_variables:  IDENTIFICADOR CHAR_COMA fila_variables {insertarEnOrden(&listaSimbolos,$1,tipo,"",0);} 
+fila_variables:  IDENTIFICADOR CHAR_COMA fila_variables {if(insertarEnOrden(&listaSimbolos,$1,tipo,"",0) == DUPLICADO){yyerrorVariablesDuplicadas($1);};} 
                 | IDENTIFICADOR OP_DOSPUNTOS tipo {
-                                                    insertarEnOrden(&listaSimbolos,$1,tipo,"",0); 
+                                                    if(insertarEnOrden(&listaSimbolos,$1,tipo,"",0) == DUPLICADO){yyerrorVariablesDuplicadas($1);}; 
                                                    }
                 ;
                 
@@ -227,22 +239,22 @@ tipo: INTEGER  {strcpy(tipo,"INTEGER");}
     ;
 
 untilLoop: 
-        UNTILLOOP {apilarInd = true;} PARENTESIS_A cond {if(strcmp(etiquetaCond, "BEQ") == 0){modificarTerceto_etiquetaCond("BNE", condInd);};
-                                                         if(strcmp(etiquetaCond, "BNE") == 0){modificarTerceto_etiquetaCond("BEQ", condInd);};
-                                                         if(strcmp(etiquetaCond, "BLE") == 0){modificarTerceto_etiquetaCond("BGT", condInd);};
-                                                         if(strcmp(etiquetaCond, "BLT") == 0){modificarTerceto_etiquetaCond("BGE", condInd);};
-                                                         if(strcmp(etiquetaCond, "BGE") == 0){modificarTerceto_etiquetaCond("BLT", condInd);};
-                                                         if(strcmp(etiquetaCond, "BGT") == 0){modificarTerceto_etiquetaCond("BLE", condInd);};}
-                                                        CHAR_COMA asignacion PARENTESIS_C {desapilar(&pilaInit, WHind); crearTerceto("BI", WHind, ""); modificarTerceto_saltoCondicional(condInd); apilarInd = false;}
+        UNTILLOOP {indWH = crearEtiquetaEnTerceto();} PARENTESIS_A cond {modificarTerceto_etiquetaCond(etiquetaCond, condInd);}
+                                                        CHAR_COMA asignacion PARENTESIS_C {sprintf(WHind, "[%d]", indWH); crearTerceto("BI", WHind, ""); desapilarTercetos(); modificarTerceto_saltoCondicional(condInd); crearEtiquetaEnTerceto();}
         ;
 
 buscoYReemplazo:
-        IDENTIFICADOR OP_DOSPUNTOS OP_IGUAL BUSCOYREEMPLAZO PARENTESIS_A CONST_INTEGER {strcpy(numeroABuscar, yytext);} CHAR_COMA CORCHETE_A listaNumeros CORCHETE_C PARENTESIS_C 
-        {if(numEncontrado == true){crearTerceto(":=", $1, numeroABuscar);}; if(numEncontrado == false){crearTerceto("PANTALLA", "numero no encontrado", "");};}
+        IDENTIFICADOR OP_DOSPUNTOS OP_IGUAL BUSCOYREEMPLAZO PARENTESIS_A CONST_INTEGER {if(buscarEnLista(&listaSimbolos, $1, tipoLadoIzq) == false){yyerrorNoExisteVariable($1);};
+                                                                                        if(strcmp(tipoLadoIzq, "INTEGER") != 0){yyerrorTiposEntreIds($1);};
+                                                                                        strcpy(nombre, "_"); strcat(nombre, yytext); strcpy(numeroABuscar, nombre); crearTerceto(":=", "@pivot", numeroABuscar); insertarEnOrden(&listaSimbolos,nombre,"",yytext,0); insertarEnOrden(&listaSimbolos,"@pivot","INTEGER", "",0);}
+                                                                                      CHAR_COMA CORCHETE_A listaNumeros CORCHETE_C PARENTESIS_C 
+        {crearTerceto("WRITE", "numero no encontrado", ""); BIind = crearTerceto("BI", "", ""); while((saltInd = desapilarTercetos()) != -1){modificarTerceto_saltoCondicional(saltInd);}; crearEtiquetaEnTerceto(); crearTerceto(":=", $1, "@aux"); modificarTerceto_saltoCondicional(BIind); crearEtiquetaEnTerceto();}
                    ;
 
-listaNumeros: listaNumeros CHAR_COMA CONST_INTEGER {if(strcmp(yytext, numeroABuscar) == 0){numEncontrado = true;};}
-        | CONST_INTEGER {if(strcmp(yytext, numeroABuscar) == 0){numEncontrado = true;};}
+listaNumeros: listaNumeros CHAR_COMA CONST_INTEGER {strcpy(nombre, "_");
+                                                    strcat(nombre, yytext); auxInd = crearTerceto(":=", "@aux", nombre); sprintf(auxIndC, "[%d]", auxInd); crearTerceto("CMP", "@pivot", "@aux"); saltInd = crearTerceto("BEQ", "", ""); apilarTercetos(saltInd); insertarEnOrden(&listaSimbolos,nombre,"",yytext,0);}
+        | CONST_INTEGER {strcpy(nombre, "_");
+                        strcat(nombre, yytext); auxInd = crearTerceto(":=", "@aux", nombre); sprintf(auxIndC, "[%d]", auxInd); crearTerceto("CMP","@pivot", "@aux"); saltInd = crearTerceto("BEQ", "", ""); apilarTercetos(saltInd); insertarEnOrden(&listaSimbolos,nombre,"",yytext,0); insertarEnOrden(&listaSimbolos,"@aux","INTEGER", "",0);}
 
 %%
 
@@ -271,10 +283,31 @@ int main(int argc, char *argv[])
    return 0;
 }
 
-/*
-int yyerror(void)
+int crearEtiquetaEnTerceto()
+{
+  indexTerceto = devolver_index_terceto();
+  sprintf(etiqueta, "Etiq%d" , indexTerceto);
+  crearTerceto(etiqueta, "", "");
+
+  return indexTerceto;
+}
+
+int yyerrorTiposEntreIds(char* ptr)
      {
-       printf("Error Sintactico %s\n",yytext);
+       printf("Error semantico: asignacion o comparacion (id y id o id y cte) de distinto tipos en id = %s, saliendo... \n",yytext);
          exit (1);
      }
-*/
+
+
+int yyerrorNoExisteVariable(char* ptr)
+     {
+       printf("Error semantico: variable no declarada: %s, saliendo... \n",ptr);
+       exit (1);
+     }
+
+int yyerrorVariablesDuplicadas(char* ptr)
+     {
+       printf("Error semantico: definicion de variables duplicadas: %s, saliendo... \n",ptr);
+       exit (1);
+     }
+

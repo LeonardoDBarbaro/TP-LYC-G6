@@ -1,22 +1,37 @@
 _____________________________________________________________________________________________
 |NOMBRE                        |TIPO DE DATO  |VALOR                         |LONGITUD      |
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-|_10                           |              |10                            |              |
-|_11                           |              |11                            |              |
-|_120                          |              |120                           |              |
-|_2                            |              |2                             |              |
-|_3                            |              |3                             |              |
-|_30                           |              |30                            |              |
-|_a mayor b o c mayor b        |              |a mayor b o c mayor b         |21            |
-|_a mayor b y c mayor b        |              |a mayor b y c mayor b         |21            |
-|_a no es mas grande que b     |              |a no es mas grande que b      |24            |
-|_inventaron el VAR            |              |inventaron el VAR             |17            |
+|@aux                          |INTEGER       |                              |              |
+|@pivot                        |INTEGER       |                              |              |
+|_1                            |              |1                             |              |
+|_10                           |INTEGER       |10                            |              |
+|_11                           |INTEGER       |11                            |              |
+|_120                          |INTEGER       |120                           |              |
+|_2                            |INTEGER       |2                             |              |
+|_20                           |INTEGER       |20                            |              |
+|_3                            |INTEGER       |3                             |              |
+|_30                           |INTEGER       |30                            |              |
+|_4                            |              |4                             |              |
+|_40                           |INTEGER       |40                            |              |
+|_50                           |              |50                            |              |
+|_a1 mayor b1 o c1 mayor b1    |              |a1 mayor b1 o c1 mayor b1     |25            |
+|_a1 mayor b1 y c1 mayor b1    |STRING        |a1 mayor b1 y c1 mayor b1     |25            |
+|_a1 no es mas grande que b1   |STRING        |a1 no es mas grande que b1    |26            |
 |_segundo Brasil               |              |segundo Brasil                |14            |
 |a1                            |FLOAT         |                              |              |
 |b1                            |FLOAT         |                              |              |
+|c1                            |FLOAT         |                              |              |
+|cte1                          |INTEGER       |                              |              |
+|cte2                          |INTEGER       |                              |              |
+|id1                           |INTEGER       |                              |              |
+|id2                           |INTEGER       |                              |              |
 |p1                            |STRING        |                              |              |
 |p2                            |STRING        |                              |              |
 |p3                            |STRING        |                              |              |
+|p4                            |STRING        |                              |              |
+|reemplazar                    |INTEGER       |                              |              |
 |variable1                     |INTEGER       |                              |              |
 |variable2                     |INTEGER       |                              |              |
+|variable3                     |INTEGER       |                              |              |
+|x                             |INTEGER       |                              |              |
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
